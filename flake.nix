@@ -1,115 +1,50 @@
 {
-  description = "THECLUSTER internal dashboard";
-
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs?ref=nixos-unstable";
-    systems.url = "github:nix-systems/default";
-
-    flake-parts = {
-      url = "github:hercules-ci/flake-parts";
-      inputs.nixpkgs-lib.follows = "nixpkgs";
-    };
-
-    treefmt-nix = {
-      url = "github:numtide/treefmt-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    bun2nix = {
-      url = "github:nix-community/bun2nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    gomod2nix = {
-      url = "github:nix-community/gomod2nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.flake-utils.inputs.systems.follows = "systems";
-    };
-  };
+  inputs.clan-core.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
+  inputs.nixpkgs.follows = "clan-core/nixpkgs";
 
   outputs =
-    inputs@{ flake-parts, ... }:
-    flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = import inputs.systems;
+    {
+      self,
+      clan-core,
+      nixpkgs,
+      ...
+    }@inputs:
+    let
+      # Usage see: https://docs.clan.lol
+      clan = clan-core.lib.clan {
+        inherit self;
+        imports = [ ./clan.nix ];
+        specialArgs = { inherit inputs; };
 
-      imports = with inputs; [
-        treefmt-nix.flakeModule
-      ];
-
-      perSystem =
-        { inputs', system, ... }:
-        let
-          pkgs = import inputs.nixpkgs {
-            inherit system;
-            overlays = with inputs; [
-              bun2nix.overlays.default
-              gomod2nix.overlays.default
-            ];
-          };
-
-          version = "0.1.0";
-
-          api = pkgs.callPackage ./nix/api.nix {
-            inherit pkgs version;
-          };
-          web = pkgs.callPackage ./nix/web.nix {
-            inherit pkgs version;
-          };
-          app = pkgs.callPackage ./nix/app.nix {
-            inherit pkgs api web;
-          };
-          ctr = pkgs.callPackage ./nix/ctr.nix {
-            inherit pkgs app;
-          };
-        in
-        {
-          _module.args = { inherit pkgs; };
-
-          packages = {
-            inherit
-              api
-              app
-              ctr
-              web
-              ;
-            default = app;
-          };
-
-          apps.api = {
-            type = "app";
-            program = "${api}/bin/thecluster-api";
-            meta.description = "THECLUSTER API";
-          };
-
-          devShells.default = pkgs.mkShell {
-            packages = with pkgs; [
-              actionlint
-              bun
-              bun2nix
-              docker
-              gh
-              go
-              gomod2nix
-              gopls
-              kind
-              kubernetes-helm
-              nil
-              nixfmt
-              nodejs
-            ];
-
-            BUN = "${pkgs.bun}/bin/bun";
-            BUN2NIX = "${pkgs.bun2nix}/bin/bun2nix";
-            GO = "${pkgs.go}/bin/go";
-            GOMOD2NIX = "${pkgs.gomod2nix}/bin/gomod2nix";
-            HELM = "${pkgs.kubernetes-helm}/bin/helm";
-            NIXFMT = "${pkgs.nixfmt}/bin/nixfmt";
-          };
-
-          treefmt = {
-            programs.gofmt.enable = true;
-            programs.nixfmt.enable = true;
-          };
-        };
+        # Customize nixpkgs
+        # pkgsForSystem =
+        #   system:
+        #   import nixpkgs {
+        #     inherit system;
+        #     config = {
+        #       allowUnfree = true;
+        #     };
+        #     overlays = [];
+        #   };
+      };
+    in
+    {
+      inherit (clan.config) nixosConfigurations nixosModules clanInternals;
+      clan = clan.config;
+      # Add the Clan cli tool to the dev shell.
+      # Use "nix develop" to enter the dev shell.
+      devShells =
+        nixpkgs.lib.genAttrs
+          [
+            "x86_64-linux"
+            "aarch64-linux"
+            "aarch64-darwin"
+            "x86_64-darwin"
+          ]
+          (system: {
+            default = clan-core.inputs.nixpkgs.legacyPackages.${system}.mkShell {
+              packages = [ clan-core.packages.${system}.clan-cli ];
+            };
+          });
     };
 }
