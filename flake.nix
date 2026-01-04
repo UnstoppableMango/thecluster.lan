@@ -59,25 +59,6 @@
       flake-parts,
       ...
     }:
-    # let
-    #   # Usage see: https://docs.clan.lol
-    #   clan = clan-core.lib.clan {
-    #     inherit self;
-    #     imports = [ ./clan.nix ];
-    #     specialArgs = { inherit inputs; };
-
-    #     # Customize nixpkgs
-    #     # pkgsForSystem =
-    #     #   system:
-    #     #   import nixpkgs {
-    #     #     inherit system;
-    #     #     config = {
-    #     #       allowUnfree = true;
-    #     #     };
-    #     #     overlays = [];
-    #     #   };
-    #   };
-    # in
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = import inputs.systems;
 
@@ -99,17 +80,17 @@
 
             # Enable remote Clan commands over SSH
             clan.core.networking.targetHost = "root@jon";
+          };
 
-            # Disk configuration
-            disko.devices.disk.main = {
-              device = "/dev/disk/by-id/nvme-eui.e8238fa6bf530001001b448b4aec2929";
-            };
+          hades = {
+            imports = with inputs; [
+              nixos.nixosModules.hades
+            ];
+
+            nixpkgs.hostPlatform = "aarch64-linux";
           };
         };
       };
-
-      # inherit (clan.config) nixosConfigurations nixosModules clanInternals;
-      # clan = clan.config;
 
       perSystem =
         { inputs', pkgs, ... }:
@@ -117,6 +98,7 @@
           devShells.default = pkgs.mkShell {
             packages = with pkgs; [
               inputs'.clan-core.packages.clan-cli
+              nil
               nixfmt
             ];
           };
