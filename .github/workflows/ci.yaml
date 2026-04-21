@@ -48,7 +48,7 @@ jobs:
           github_access_token: ${{ github.token }}
 
       - run: nix flake check --all-systems
-      - run: nix build .#api .#web .#app .#docker
+      - run: nix build .#api .#web .#app .#ctr
 
   helm:
     runs-on: ubuntu-latest
@@ -98,7 +98,7 @@ jobs:
 
       - name: Build image stream
         run: |
-          nix build .#docker
+          nix build .#ctr
           ./result | docker load
 
       - name: Tag and push image

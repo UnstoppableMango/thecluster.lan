@@ -60,7 +60,7 @@ make nix-deps
 nix build .#web
 nix build .#api
 nix build .#app
-nix build .#docker
+nix build .#ctr
 ```
 
-The Docker image is produced with `dockerTools.streamLayeredImage`.
+The container image is produced with `dockerTools.streamLayeredImage`.
