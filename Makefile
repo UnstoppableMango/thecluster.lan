@@ -23,7 +23,7 @@ test:
 	cd src/api && $(GO) test ./...
 
 run: build-web
-	$(GO) run ./src/api/cmd/thecluster-api
+	$(GO) -C src/api run ./cmd/thecluster-api
 
 chart-lint:
 	$(HELM) lint charts/thecluster
