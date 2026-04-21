@@ -91,6 +91,7 @@
               go
               gomod2nix
               gopls
+              kind
               kubernetes-helm
               nil
               nixfmt
