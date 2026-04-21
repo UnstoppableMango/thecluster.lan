@@ -22,27 +22,34 @@ Internal dashboard for `thecluster.lan`.
 
 ```bash
 nix develop
-bun install --cwd src/web
-go test ./src/api/...
-bun run --cwd src/web build
-go run ./src/api/cmd/thecluster-api
+make build
+make test
+make run
 ```
 
 The Go service serves static files from `src/web/dist` by default, so build the web app before starting the API locally.
+
+## Make targets
+
+```bash
+make check
+make nix-build
+make nix-deps
+make flake-update
+```
 
 ## Regenerating Nix lock material
 
 When frontend dependencies change:
 
 ```bash
-bun install --cwd src/web
-bun2nix --lock-file src/web/bun.lock --output-file src/web/bun.nix
+make nix-deps
 ```
 
 When Go dependencies change:
 
 ```bash
-gomod2nix generate --dir src/api
+make nix-deps
 ```
 
 ## Nix builds
