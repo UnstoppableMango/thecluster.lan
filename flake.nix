@@ -49,27 +49,36 @@
 
           version = "0.1.0";
 
-          build = pkgs.callPackage ./default.nix {
+          api = pkgs.callPackage ./api.nix {
             inherit pkgs version;
-            bun2nix = inputs'.bun2nix.packages.default;
+          };
+          web = pkgs.callPackage ./web.nix {
+            inherit pkgs version;
+            inherit (inputs') bun2nix;
+          };
+          app = pkgs.callPackage ./app.nix {
+            inherit pkgs api web;
+          };
+          docker = pkgs.callPackage ./ctr.nix {
+            inherit pkgs app;
           };
         in
         {
           _module.args = { inherit pkgs; };
 
           packages = {
-            inherit (build)
+            inherit
               api
               app
               docker
               web
               ;
-            default = build.app;
+            default = app;
           };
 
           apps.api = {
             type = "app";
-            program = "${build.api}/bin/thecluster-api";
+            program = "${api}/bin/thecluster-api";
             meta.description = "THECLUSTER API";
           };
 

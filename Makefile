@@ -1,5 +1,4 @@
 BUN       ?= bun
-BUN2NIX   ?= bun2nix
 GO        ?= go
 GOMOD2NIX ?= gomod2nix
 HELM      ?= helm
@@ -37,7 +36,6 @@ nix-build:
 	$(NIX) build .#web .#api .#app .#docker
 
 nix-deps: web-deps
-	$(BUN2NIX) --lock-file src/web/bun.lock --output-file src/web/bun.nix
 	$(GOMOD2NIX) generate --dir src/api
 
 flake-update:

@@ -2,3 +2,5 @@ result
 .direnv/
 src/web/dist/
 src/web/node_modules/
+.vscode/*
+!.vscode/extensions.json

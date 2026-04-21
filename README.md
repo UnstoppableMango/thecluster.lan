@@ -43,7 +43,7 @@ make flake-update
 When frontend dependencies change:
 
 ```bash
-make nix-deps
+cd src/web && bun install
 ```
 
 When Go dependencies change:
@@ -51,6 +51,8 @@ When Go dependencies change:
 ```bash
 make nix-deps
 ```
+
+`src/web/package.json` runs `bun2nix -o bun.nix` as a `postinstall` script, so `bun install` keeps the Bun v2 lock material in sync automatically.
 
 ## Nix builds
 
