@@ -1,5 +1,6 @@
 {
   pkgs ? import <nixpkgs> { },
+  app,
 }:
 pkgs.dockerTools.streamLayeredImage {
   name = "thecluster.lan";

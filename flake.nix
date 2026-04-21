@@ -49,17 +49,17 @@
 
           version = "0.1.0";
 
-          api = pkgs.callPackage ./api.nix {
+          api = pkgs.callPackage ./nix/api.nix {
             inherit pkgs version;
           };
-          web = pkgs.callPackage ./web.nix {
+          web = pkgs.callPackage ./nix/web.nix {
             inherit pkgs version;
-            inherit (inputs') bun2nix;
+            bun2nix = inputs'.bun2nix.packages.default;
           };
-          app = pkgs.callPackage ./app.nix {
+          app = pkgs.callPackage ./nix/app.nix {
             inherit pkgs api web;
           };
-          docker = pkgs.callPackage ./ctr.nix {
+          ctr = pkgs.callPackage ./nix/ctr.nix {
             inherit pkgs app;
           };
         in
@@ -70,7 +70,7 @@
             inherit
               api
               app
-              docker
+              ctr
               web
               ;
             default = app;

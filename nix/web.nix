@@ -9,7 +9,16 @@ bun2nix.mkDerivation {
   inherit version;
 
   src = lib.cleanSource ../src/web;
-  bunNix = ../src/web/bun.nix;
+
+  bunDeps = pkgs.bun2nix.fetchBunDeps {
+    bunNix = ../src/web/bun.nix;
+  };
+
+  buildPhase = ''
+    runHook preBuild
+    bun run build
+    runHook postBuild
+  '';
 
   installPhase = ''
     runHook preInstall
