@@ -15,7 +15,6 @@
 
     clan-core = {
       url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
-
       inputs = {
         nixpkgs.follows = "nixpkgs";
         systems.follows = "systems";
@@ -27,7 +26,6 @@
 
     dotfiles = {
       url = "github:UnstoppableMango/dotfiles";
-
       inputs = {
         nixpkgs.follows = "nixpkgs";
         systems.follows = "systems";
@@ -38,7 +36,6 @@
 
     nixos = {
       url = "github:UnstoppableMango/nixos";
-
       inputs = {
         nixpkgs.follows = "nixpkgs";
         flake-parts.follows = "flake-parts";
@@ -55,10 +52,7 @@
   };
 
   outputs =
-    inputs@{
-      flake-parts,
-      ...
-    }:
+    inputs@{ flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = import inputs.systems;
 
@@ -79,15 +73,11 @@
             nixpkgs.hostPlatform = "x86_64-linux";
 
             # Enable remote Clan commands over SSH
-            clan.core.networking.targetHost = "root@jon";
-          };
+            clan.core.networking.targetHost = "root@agreus";
 
-          hades = {
-            imports = with inputs; [
-              nixos.nixosModules.hades
-            ];
-
-            nixpkgs.hostPlatform = "aarch64-linux";
+            disko.devices.disk.main = {
+              device = "/dev/disk/by-id/nvme-eui.e8238fa6bf530001001b448b4aec2929";
+            };
           };
         };
       };
