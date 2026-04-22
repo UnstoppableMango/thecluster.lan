@@ -21,7 +21,7 @@ make test           # Run Go tests (go test ./...)
 make run            # Start API at localhost:8080
 make check          # Full check: test + build-web + chart-lint + nix flake check
 make lint           # Helm chart lint
-make clean          # Remove dist/, bin/, result
+make clean          # Remove dist/, src/api/thecluster-api, result
 ```
 
 **Run a single Go test:**
