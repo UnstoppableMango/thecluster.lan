@@ -54,7 +54,6 @@
           };
           web = pkgs.callPackage ./nix/web.nix {
             inherit pkgs version;
-            bun2nix = inputs'.bun2nix.packages.default;
           };
           app = pkgs.callPackage ./nix/app.nix {
             inherit pkgs api web;

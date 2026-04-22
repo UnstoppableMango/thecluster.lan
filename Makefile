@@ -38,7 +38,7 @@ web-deps:
 build-web: web-deps
 	$(BUN) run --cwd src/web build
 build-api:
-	cd src/api && $(GO) build ./cmd/thecluster-api
+	$(GO) -C src/api build -o ${CURDIR}/bin/ ./cmd/thecluster-api
 
 chart-lint:
 	$(HELM) lint charts/thecluster
