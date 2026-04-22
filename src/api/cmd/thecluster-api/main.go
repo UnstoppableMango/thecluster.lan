@@ -10,10 +10,9 @@ import (
 
 func main() {
 	port := getenv("PORT", "8080")
-	staticDir := getenv("STATIC_DIR", "src/web/dist")
 
 	addr := ":" + port
-	handler := server.New(staticDir)
+	handler := server.New(staticDirs()...)
 
 	log.Printf("listening on %s", addr)
 	if err := http.ListenAndServe(addr, handler); err != nil {
@@ -27,4 +26,12 @@ func getenv(key string, fallback string) string {
 	}
 
 	return fallback
+}
+
+func staticDirs() []string {
+	if value, ok := os.LookupEnv("STATIC_DIR"); ok && value != "" {
+		return []string{value}
+	}
+
+	return []string{"../web/dist", "src/web/dist"}
 }

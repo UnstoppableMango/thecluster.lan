@@ -48,7 +48,7 @@ nix-build:
 
 nix-deps: web-deps
 	$(GOMOD2NIX) generate --dir src/api
-	$(BUN2NIX) -l src/web/bun.lockb -o src/web/bun.nix
+	$(BUN2NIX) -l src/web/bun.lock -o src/web/bun.nix
 
 bin/stream-image.sh: ${GO_SRC} ${TS_SRC} ${JS_SRC} ${VUE_SRC}
 	nix build .#ctr --out-link $@

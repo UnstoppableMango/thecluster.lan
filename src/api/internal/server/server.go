@@ -12,11 +12,11 @@ type pingResponse struct {
 	Message string `json:"message"`
 }
 
-func New(staticDir string) http.Handler {
+func New(staticDirs ...string) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /ping", handlePing)
 
-	fileServer := newStaticHandler(staticDir)
+	fileServer := newStaticHandler(staticDirs...)
 	if fileServer != nil {
 		mux.Handle("/", fileServer)
 	}
@@ -29,8 +29,8 @@ func handlePing(w http.ResponseWriter, _ *http.Request) {
 	_ = json.NewEncoder(w).Encode(pingResponse{Message: "pong"})
 }
 
-func newStaticHandler(staticDir string) http.Handler {
-	root := resolveStaticDir(staticDir)
+func newStaticHandler(staticDirs ...string) http.Handler {
+	root := resolveStaticDir(staticDirs...)
 	if root == "" {
 		return nil
 	}
@@ -41,13 +41,12 @@ func newStaticHandler(staticDir string) http.Handler {
 			return
 		}
 
-		target := filepath.Clean(strings.TrimPrefix(r.URL.Path, "/"))
-		if target == "." || target == "" {
-			http.ServeFile(w, r, filepath.Join(root, "index.html"))
+		path, ok := resolveStaticPath(root, r.URL.Path)
+		if !ok {
+			http.NotFound(w, r)
 			return
 		}
 
-		path := filepath.Join(root, target)
 		info, err := os.Stat(path)
 		if err == nil && !info.IsDir() {
 			http.ServeFile(w, r, path)
@@ -64,11 +63,31 @@ func resolveStaticDir(paths ...string) string {
 			continue
 		}
 
-		indexPath := filepath.Join(path, "index.html")
+		absPath, err := filepath.Abs(path)
+		if err != nil {
+			continue
+		}
+
+		indexPath := filepath.Join(absPath, "index.html")
 		if _, err := os.Stat(indexPath); err == nil {
-			return path
+			return absPath
 		}
 	}
 
 	return ""
+}
+
+func resolveStaticPath(root string, requestPath string) (string, bool) {
+	target := filepath.Clean(strings.TrimPrefix(requestPath, "/"))
+	if target == "." || target == "" {
+		return filepath.Join(root, "index.html"), true
+	}
+
+	path := filepath.Join(root, target)
+	rel, err := filepath.Rel(root, path)
+	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		return "", false
+	}
+
+	return path, true
 }

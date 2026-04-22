@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "postinstall": "bun2nix -o bun.nix",
+    "postinstall": "bun2nix bun.lock -o bun.nix",
     "preview": "vite preview"
   },
   "dependencies": {
