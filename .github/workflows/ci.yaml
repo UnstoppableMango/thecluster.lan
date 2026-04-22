@@ -17,9 +17,9 @@ jobs:
       run:
         working-directory: src/web
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
-      - uses: oven-sh/setup-bun@v2
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
 
       - run: bun install --frozen-lockfile
       - run: bun run build
@@ -30,9 +30,9 @@ jobs:
       run:
         working-directory: src/api
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
           go-version-file: src/api/go.mod
 
@@ -41,9 +41,9 @@ jobs:
   nix:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
-      - uses: cachix/install-nix-action@v31
+      - uses: cachix/install-nix-action@616559265b40713947b9c190a8ff4b507b5df49b # v31.10.4
         with:
           github_access_token: ${{ github.token }}
 
@@ -58,9 +58,9 @@ jobs:
     env:
       HELM_EXPERIMENTAL_OCI: "1"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
-      - uses: azure/setup-helm@v4
+      - uses: azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4 # v4.3.1
 
       - run: helm lint .
 
@@ -82,19 +82,27 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     needs: [nix]
-    if: github.event_name == 'push'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
-      - uses: cachix/install-nix-action@v31
+      - uses: cachix/install-nix-action@616559265b40713947b9c190a8ff4b507b5df49b # v31.10.4
         with:
           github_access_token: ${{ github.token }}
 
-      - uses: docker/login-action@v3
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        if: github.event_name == 'push'
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5.10.0
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build image stream
         run: |
@@ -102,8 +110,13 @@ jobs:
           ./result | docker load
 
       - name: Tag and push image
+        if: github.event_name == 'push'
         run: |
           image_id="$(docker images --format '{{.Repository}}:{{.Tag}}' | grep '^thecluster.lan:' | head -n 1)"
-          target="ghcr.io/${GITHUB_REPOSITORY,,}:${GITHUB_SHA}"
-          docker tag "$image_id" "$target"
-          docker push "$target"
+          while IFS= read -r target; do
+            [ -n "$target" ] || continue
+            docker tag "$image_id" "$target"
+            docker push "$target"
+          done <<'EOF'
+          ${{ steps.meta.outputs.tags }}
+          EOF
