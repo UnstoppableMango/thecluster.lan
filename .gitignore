@@ -1,0 +1,8 @@
+.direnv/
+.vscode/*
+!.vscode/extensions.json
+
+result
+bin/
+src/web/dist/
+src/web/node_modules/
