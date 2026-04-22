@@ -79,7 +79,7 @@ jobs:
         env:
           REPOSITORY: ${{ github.repository }}
 
-  docker:
+  podman:
     runs-on: thecluster.lan-runners
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -88,12 +88,9 @@ jobs:
         with:
           github_access_token: ${{ github.token }}
 
-      - uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
+      - name: Podman login
         if: github.event_name == 'push'
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | nix develop -c podman login ghcr.io -u "${{ github.repository_owner }}" --password-stdin
 
       - id: meta
         uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6.0.0
@@ -106,17 +103,17 @@ jobs:
       - name: Build image stream
         run: |
           nix build .#ctr
-          ./result | nix develop -c docker load
+          ./result | nix develop -c podman load
 
       - name: Tag and push image
         if: github.event_name == 'push'
         run: |
           image_id="thecluster.lan/dashboard:latest"
-          nix develop -c docker image inspect "$image_id" >/dev/null
+          nix develop -c podman image inspect "$image_id" >/dev/null
           while IFS= read -r target; do
             [ -n "$target" ] || continue
-            nix develop -c docker tag "$image_id" "$target"
-            nix develop -c docker push "$target"
+            nix develop -c podman tag "$image_id" "$target"
+            nix develop -c podman push "$target"
           done <<'EOF'
           ${{ steps.meta.outputs.tags }}
           EOF
