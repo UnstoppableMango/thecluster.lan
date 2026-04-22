@@ -106,17 +106,17 @@ jobs:
       - name: Build image stream
         run: |
           nix build .#ctr
-          ./result | docker load
+          ./result | nix develop -c docker load
 
       - name: Tag and push image
         if: github.event_name == 'push'
         run: |
           image_id="thecluster.lan/dashboard:latest"
-          docker image inspect "$image_id" >/dev/null
+          nix develop -c docker image inspect "$image_id" >/dev/null
           while IFS= read -r target; do
             [ -n "$target" ] || continue
-            docker tag "$image_id" "$target"
-            docker push "$target"
+            nix develop -c docker tag "$image_id" "$target"
+            nix develop -c docker push "$target"
           done <<'EOF'
           ${{ steps.meta.outputs.tags }}
           EOF
