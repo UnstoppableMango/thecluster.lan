@@ -3,7 +3,7 @@
   app,
 }:
 pkgs.dockerTools.streamLayeredImage {
-  name = "thecluster.lan";
+  name = "thecluster.lan/dashboard";
   tag = "latest";
 
   contents = [

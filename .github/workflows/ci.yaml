@@ -99,7 +99,7 @@ jobs:
       - id: meta
         uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5.10.0
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ghcr.io/${{ github.repository }}/dashboard
           tags: |
             type=sha
             type=raw,value=latest,enable={{is_default_branch}}
@@ -112,7 +112,8 @@ jobs:
       - name: Tag and push image
         if: github.event_name == 'push'
         run: |
-          image_id="$(docker images --format '{{.Repository}}:{{.Tag}}' | grep '^thecluster.lan:' | head -n 1)"
+          image_id="thecluster.lan/dashboard:latest"
+          docker image inspect "$image_id" >/dev/null
           while IFS= read -r target; do
             [ -n "$target" ] || continue
             docker tag "$image_id" "$target"
