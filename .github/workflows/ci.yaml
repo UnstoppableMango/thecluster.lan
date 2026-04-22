@@ -48,7 +48,7 @@ jobs:
           github_access_token: ${{ github.token }}
 
       - run: nix flake check --all-systems
-      - run: nix build .#api .#web .#app .#ctr
+      - run: nix build .#api .#web .#app
 
   helm:
     runs-on: ubuntu-latest
