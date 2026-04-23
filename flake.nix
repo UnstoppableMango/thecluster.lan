@@ -87,6 +87,7 @@
               bun
               bun2nix
               docker
+              gh
               go
               gomod2nix
               gopls
