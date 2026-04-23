@@ -17,6 +17,12 @@ ingress:
   host: thecluster.lan
   tls: []
 
+httpRoute:
+  enabled: false
+  annotations: {}
+  parentRefs: []
+  hostnames: []
+
 resources: {}
 
 nodeSelector: {}
