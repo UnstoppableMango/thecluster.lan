@@ -46,15 +46,16 @@ nix build .#ctr     # Docker image (stream layered)
 
 ### Go API (`api/`)
 - Entry: `cmd/thecluster-api/main.go`
-- Logic: `internal/server/server.go` — single `GET /ping` endpoint + static file serving
+- Logic: `internal/server/server.go` — `GET /ping` endpoint + static file serving via `chi` + `github.com/olivere/vite`
 - Serves Vue build output from `../web/dist` (configurable via `STATIC_DIR` env var)
-- SPA fallback: all non-file routes → `index.html`
-- Path traversal rejection built in
-- No external dependencies — stdlib only
+- Routing: `GET /` → Vite index, `GET /assets/*` → Vite assets, all other paths → `404.html` with HTTP 404
+- Path traversal: handled by `path.Clean` (vite handler) + `os.DirFS` + `http.FileServerFS` (stdlib)
+- Dependencies: `github.com/go-chi/chi/v5`, `github.com/olivere/vite`
 
 ### Vue Frontend (`web/`)
 - Vue 3 Composition API (`<script setup>`), Vite, Tailwind CSS v4
-- Single `App.vue` with `/ping` call + response display
+- `App.vue` — main page with `/ping` call + response display
+- No 404 page — Go embeds `api/internal/server/404.html` at compile time and serves it directly
 - Build output → `dist/` (consumed by Go API for static serving)
 
 ### Nix Packaging (`nix/`)
