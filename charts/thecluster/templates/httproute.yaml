@@ -11,7 +11,7 @@ metadata:
   {{- end }}
 spec:
   parentRefs:
-    {{- toYaml .Values.httpRoute.parentRefs | nindent 4 }}
+    {{- required "httpRoute.parentRefs is required when httpRoute.enabled=true (e.g. [{name: my-gateway, namespace: gateway-ns}])" (.Values.httpRoute.parentRefs | default "" | empty | not | ternary .Values.httpRoute.parentRefs nil) | toYaml | nindent 4 }}
   {{- with .Values.httpRoute.hostnames }}
   hostnames:
     {{- toYaml . | nindent 4 }}
