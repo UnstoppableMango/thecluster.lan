@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
-    "typecheck": "vue-tsc --noEmit",
+    "build": "bun run typecheck && vite build",
+    "typecheck": "vue-tsc --noEmit && tsc --noEmit -p tsconfig.node.json",
     "postinstall": "bun2nix bun.lock -o bun.nix",
     "preview": "vite preview"
   },
@@ -15,6 +15,7 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.4",
+    "@types/node": "^25.6.0",
     "@vitejs/plugin-vue": "^5.2.3",
     "@vue/tsconfig": "^0.7.0",
     "bun2nix": "^2.0.8",
