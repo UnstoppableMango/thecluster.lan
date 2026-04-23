@@ -21,17 +21,17 @@ make test           # Run Go tests (go test ./...)
 make run            # Start API at localhost:8080
 make check          # Full check: test + build-web + chart-lint + nix flake check
 make lint           # Helm chart lint
-make clean          # Remove dist/, src/api/thecluster-api, result
+make clean          # Remove dist/, api/thecluster-api, result
 ```
 
 **Run a single Go test:**
 ```bash
-cd src/api && go test ./internal/server/ -run TestPing
+cd api && go test ./internal/server/ -run TestPing
 ```
 
 **Frontend dev (hot reload):**
 ```bash
-cd src/web && bun run dev
+cd web && bun run dev
 ```
 
 **Nix builds:**
@@ -44,7 +44,7 @@ nix build .#ctr     # Docker image (stream layered)
 
 ## Architecture
 
-### Go API (`src/api/`)
+### Go API (`api/`)
 - Entry: `cmd/thecluster-api/main.go`
 - Logic: `internal/server/server.go` — single `GET /ping` endpoint + static file serving
 - Serves Vue build output from `../web/dist` (configurable via `STATIC_DIR` env var)
@@ -52,7 +52,7 @@ nix build .#ctr     # Docker image (stream layered)
 - Path traversal rejection built in
 - No external dependencies — stdlib only
 
-### Vue Frontend (`src/web/`)
+### Vue Frontend (`web/`)
 - Vue 3 Composition API (`<script setup>`), Vite, Tailwind CSS v4
 - Single `App.vue` with `/ping` call + response display
 - Build output → `dist/` (consumed by Go API for static serving)
@@ -71,12 +71,12 @@ nix build .#ctr     # Docker image (stream layered)
 
 When Go deps change:
 ```bash
-cd src/api && gomod2nix
+cd api && gomod2nix
 ```
 
 When Bun deps change (postinstall hook auto-runs `bun2nix`):
 ```bash
-cd src/web && bun install
+cd web && bun install
 ```
 
 Or regenerate both:

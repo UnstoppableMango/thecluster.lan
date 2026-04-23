@@ -4,5 +4,5 @@
 
 result
 bin/
-src/web/dist/
-src/web/node_modules/
+web/dist/
+web/node_modules/
