@@ -12,7 +12,10 @@ func main() {
 	port := getenv("PORT", "8080")
 
 	addr := ":" + port
-	handler := server.New(staticDirs()...)
+	handler, err := server.New(staticDirs()...)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	log.Printf("listening on %s", addr)
 	if err := http.ListenAndServe(addr, handler); err != nil {

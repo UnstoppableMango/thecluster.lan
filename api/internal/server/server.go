@@ -5,56 +5,36 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/olivere/vite"
 )
 
 type pingResponse struct {
 	Message string `json:"message"`
 }
 
-func New(staticDirs ...string) http.Handler {
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /ping", handlePing)
+func New(staticDirs ...string) (http.Handler, error) {
+	r := chi.NewRouter()
+	r.Get("/ping", handlePing)
 
-	fileServer := newStaticHandler(staticDirs...)
-	if fileServer != nil {
-		mux.Handle("/", fileServer)
+	if root := resolveStaticDir(staticDirs...); root != "" {
+		vh, err := vite.NewHandler(vite.Config{
+			FS:    os.DirFS(root),
+			IsDev: false,
+		})
+		if err != nil {
+			return nil, err
+		}
+		r.Handle("/*", vh)
 	}
 
-	return mux
+	return r, nil
 }
 
 func handlePing(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(pingResponse{Message: "pong"})
-}
-
-func newStaticHandler(staticDirs ...string) http.Handler {
-	root := resolveStaticDir(staticDirs...)
-	if root == "" {
-		return nil
-	}
-
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet && r.Method != http.MethodHead {
-			http.NotFound(w, r)
-			return
-		}
-
-		path, ok := resolveStaticPath(root, r.URL.Path)
-		if !ok {
-			http.NotFound(w, r)
-			return
-		}
-
-		info, err := os.Stat(path)
-		if err == nil && !info.IsDir() {
-			http.ServeFile(w, r, path)
-			return
-		}
-
-		http.ServeFile(w, r, filepath.Join(root, "index.html"))
-	})
 }
 
 func resolveStaticDir(paths ...string) string {
@@ -68,26 +48,10 @@ func resolveStaticDir(paths ...string) string {
 			continue
 		}
 
-		indexPath := filepath.Join(absPath, "index.html")
-		if _, err := os.Stat(indexPath); err == nil {
+		if _, err := os.Stat(filepath.Join(absPath, "index.html")); err == nil {
 			return absPath
 		}
 	}
 
 	return ""
-}
-
-func resolveStaticPath(root string, requestPath string) (string, bool) {
-	target := filepath.Clean(strings.TrimPrefix(requestPath, "/"))
-	if target == "." || target == "" {
-		return filepath.Join(root, "index.html"), true
-	}
-
-	path := filepath.Join(root, target)
-	rel, err := filepath.Rel(root, path)
-	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
-		return "", false
-	}
-
-	return path, true
 }
