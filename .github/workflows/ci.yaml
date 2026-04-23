@@ -74,7 +74,7 @@ jobs:
       - name: Helm push
         if: github.event_name == 'push'
         run: |
-          chart="$(find "$RUNNER_TEMP" -maxdepth 1 -name 'thecluster-*.tgz' -print -quit)"
+          chart="$(find "$RUNNER_TEMP" -maxdepth 1 -name 'chart-*.tgz' -print -quit)"
           helm push "$chart" "oci://ghcr.io/${REPOSITORY,,}"
         env:
           REPOSITORY: ${{ github.repository }}
