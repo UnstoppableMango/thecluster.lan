@@ -8,10 +8,10 @@ bun2nix.mkDerivation {
   pname = "thecluster-web";
   inherit version;
 
-  src = lib.cleanSource ../src/web;
+  src = lib.cleanSource ../web;
 
   bunDeps = pkgs.bun2nix.fetchBunDeps {
-    bunNix = ../src/web/bun.nix;
+    bunNix = ../web/bun.nix;
   };
 
   buildPhase = ''

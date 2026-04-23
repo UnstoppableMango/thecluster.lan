@@ -13,8 +13,8 @@ Internal dashboard for `thecluster.lan`.
 
 ## Repository layout
 
-- `src/web`: Vue application built with Bun and served by the Go API
-- `src/api`: Go service with the `GET /ping` endpoint
+- `web`: Vue application built with Bun and served by the Go API
+- `api`: Go service with the `GET /ping` endpoint
 - `charts/thecluster`: Helm chart for Kubernetes deployment
 - `flake.nix`, `flake.lock`: Nix build entrypoint and pinned inputs
 
@@ -27,7 +27,7 @@ make test
 make run
 ```
 
-The Go service looks for static files in `../web/dist` and `src/web/dist` by default, so build the web app before starting the API locally.
+The Go service looks for static files in `../web/dist` and `web/dist` by default, so build the web app before starting the API locally.
 
 ## Make targets
 
@@ -43,7 +43,7 @@ make update
 When frontend dependencies change:
 
 ```bash
-cd src/web && bun install
+cd web && bun install
 ```
 
 When Go dependencies change:
@@ -52,7 +52,7 @@ When Go dependencies change:
 make nix-deps
 ```
 
-`src/web/package.json` runs `bun2nix bun.lock -o bun.nix` as a `postinstall` script, so `bun install` keeps the Bun v2 lock material in sync automatically.
+`web/package.json` runs `bun2nix bun.lock -o bun.nix` as a `postinstall` script, so `bun install` keeps the Bun v2 lock material in sync automatically.
 
 ## Nix builds
 

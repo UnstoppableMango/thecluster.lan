@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/UnstoppableMango/thecluster.lan/src/api/internal/server"
+	"github.com/UnstoppableMango/thecluster.lan/api/internal/server"
 )
 
 func main() {
@@ -33,5 +33,5 @@ func staticDirs() []string {
 		return []string{value}
 	}
 
-	return []string{"../web/dist", "src/web/dist"}
+	return []string{"../web/dist", "web/dist"}
 }
