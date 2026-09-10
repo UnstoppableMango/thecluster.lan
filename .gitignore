@@ -1,0 +1,9 @@
+.direnv/
+.vscode/*
+!.vscode/extensions.json
+
+result
+bin/
+web/dist/
+web/node_modules/
+.claude/
