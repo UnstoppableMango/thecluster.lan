@@ -1,5 +1,7 @@
 # THECLUSTER
 
+[![Hercules CI](https://hercules-ci.com/api/v1/site/github/account/UnstoppableMango/project/thecluster.lan/badge)](https://hercules-ci.com/github/UnstoppableMango/thecluster.lan)
+
 Internal dashboard for `thecluster.lan`.
 
 ## Stack
