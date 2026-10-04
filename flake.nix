@@ -97,6 +97,7 @@
               nil
               nixfmt
               nodejs
+              podman
             ];
 
             BUN = "${pkgs.bun}/bin/bun";
