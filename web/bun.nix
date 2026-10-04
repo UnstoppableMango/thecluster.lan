@@ -157,6 +157,10 @@
     url = "https://registry.npmjs.org/@napi-rs/wasm-runtime/-/wasm-runtime-1.1.4.tgz";
     hash = "sha512-3NQNNgA1YSlJb/kMH1ildASP9HW7/7kYnRI2szWJaofaS1hWmbGI4H+d3+22aGzXXN9IJ+n+GiFVcGipJP18ow==";
   };
+  "@rolldown/pluginutils@1.0.1" = fetchurl {
+    url = "https://registry.npmjs.org/@rolldown/pluginutils/-/pluginutils-1.0.1.tgz";
+    hash = "sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==";
+  };
   "@rollup/rollup-android-arm-eabi@4.60.2" = fetchurl {
     url = "https://registry.npmjs.org/@rollup/rollup-android-arm-eabi/-/rollup-android-arm-eabi-4.60.2.tgz";
     hash = "sha512-dnlp69efPPg6Uaw2dVqzWRfAWRnYVb1XJ8CyyhIbZeaq4CA5/mLeZ1IEt9QqQxmbdvagjLIm2ZL8BxXv5lH4Yw==";
@@ -329,9 +333,9 @@
     url = "https://registry.npmjs.org/@types/node/-/node-26.6.4.tgz";
     hash = "sha512-ldVPDCzj7fsaGZrLB0NuHuTvJcsNasysBAqMolr/cgxrLd1xbqxIr3XJiPnHHJUCxj5sNF1vnRj9aWnrVh5Jcg==";
   };
-  "@vitejs/plugin-vue@5.2.4" = fetchurl {
-    url = "https://registry.npmjs.org/@vitejs/plugin-vue/-/plugin-vue-5.2.4.tgz";
-    hash = "sha512-7Yx/SXSOcQq5HiiV3orevHUFn+pmMB4cgbEkDYgnkUWb0WfeQ/wa2yFv6D5ICiCQOVpjA7vYDXrC7AGO8yjDHA==";
+  "@vitejs/plugin-vue@6.0.9" = fetchurl {
+    url = "https://registry.npmjs.org/@vitejs/plugin-vue/-/plugin-vue-6.0.9.tgz";
+    hash = "sha512-rD/MORlhaZMlXWW0rEn4FB4wMinWC0z/D7Ye160S5+Rs1mC8ZDAdcDp4SjKfUhG5t8q1ktcPVw4xuTkPRlzrSA==";
   };
   "@volar/language-core@2.4.28" = fetchurl {
     url = "https://registry.npmjs.org/@volar/language-core/-/language-core-2.4.28.tgz";
