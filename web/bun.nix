@@ -389,9 +389,9 @@
     url = "https://registry.npmjs.org/@vue/shared/-/shared-3.5.32.tgz";
     hash = "sha512-ksNyrmRQzWJJ8n3cRDuSF7zNNontuJg1YHnmWRJd2AMu8Ij2bqwiiri2lH5rHtYPZjj4STkNcgcmiQqlOjiYGg==";
   };
-  "@vue/tsconfig@0.7.0" = fetchurl {
-    url = "https://registry.npmjs.org/@vue/tsconfig/-/tsconfig-0.7.0.tgz";
-    hash = "sha512-ku2uNz5MaZ9IerPPUyOHzyjhXoX2kVJaVf7hL315DC17vS6IiZRmmCPfggNbU16QTvM80+uYYy3eYJB59WCtvg==";
+  "@vue/tsconfig@0.9.1" = fetchurl {
+    url = "https://registry.npmjs.org/@vue/tsconfig/-/tsconfig-0.9.1.tgz";
+    hash = "sha512-buvjm+9NzLCJL29KY1j1991YYJ5e6275OiK+G4jtmfIb+z4POywbdm0wXusT9adVWqe0xqg70TbI7+mRx4uU9w==";
   };
   "alien-signals@1.0.13" = fetchurl {
     url = "https://registry.npmjs.org/alien-signals/-/alien-signals-1.0.13.tgz";
