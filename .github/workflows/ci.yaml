@@ -23,6 +23,8 @@ jobs:
 
       - run: bun install --frozen-lockfile
       - run: bun run build
+      # The API exits at startup without the manifest.
+      - run: test -f dist/.vite/manifest.json
 
   api:
     runs-on: ubuntu-latest
