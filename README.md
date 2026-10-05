@@ -16,7 +16,7 @@ Internal dashboard for `thecluster.lan`.
 ## Repository layout
 
 - `web`: Vue application built with Bun and served by the Go API
-- `api`: Go service with the `GET /ping` endpoint
+- `api`: Go service with `GET /ping` and `GET /api/nodes` (node health from Prometheus)
 - `charts/thecluster`: Helm chart for Kubernetes deployment
 - `flake.nix`, `flake.lock`: Nix build entrypoint and pinned inputs
 

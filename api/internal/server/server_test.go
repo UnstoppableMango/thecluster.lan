@@ -1,17 +1,21 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/UnstoppableMango/thecluster.lan/api/internal/metrics"
 )
 
 func TestPing(t *testing.T) {
-	handler, err := New()
+	handler, err := New(nil)
 	if err != nil {
 		t.Fatalf("New: %v", err)
 	}
@@ -40,7 +44,7 @@ func TestPing(t *testing.T) {
 
 func TestStaticIndex(t *testing.T) {
 	dist := makeTestDist(t)
-	handler, err := New(dist)
+	handler, err := New(nil, dist)
 	if err != nil {
 		t.Fatalf("New: %v", err)
 	}
@@ -55,7 +59,7 @@ func TestStaticIndex(t *testing.T) {
 
 func TestNotFound(t *testing.T) {
 	dist := makeTestDist(t)
-	handler, err := New(dist)
+	handler, err := New(nil, dist)
 	if err != nil {
 		t.Fatalf("New: %v", err)
 	}
@@ -73,7 +77,7 @@ func TestNotFound(t *testing.T) {
 
 func TestPathTraversal(t *testing.T) {
 	dist := makeTestDist(t)
-	handler, err := New(dist)
+	handler, err := New(nil, dist)
 	if err != nil {
 		t.Fatalf("New: %v", err)
 	}
@@ -94,7 +98,7 @@ func TestPathTraversal(t *testing.T) {
 
 func TestAssetServing(t *testing.T) {
 	dist := makeTestDist(t)
-	handler, err := New(dist)
+	handler, err := New(nil, dist)
 	if err != nil {
 		t.Fatalf("New: %v", err)
 	}
@@ -134,5 +138,54 @@ func writeFile(t *testing.T, path, content string) {
 	t.Helper()
 	if err := os.WriteFile(path, []byte(content), 0644); err != nil {
 		t.Fatalf("write %s: %v", path, err)
+	}
+}
+
+type fakeSource struct {
+	snap *metrics.Snapshot
+	err  error
+}
+
+func (f fakeSource) Snapshot(context.Context) (*metrics.Snapshot, error) {
+	return f.snap, f.err
+}
+
+func TestNodes(t *testing.T) {
+	snap := &metrics.Snapshot{Nodes: []metrics.Node{{Name: "zeus", Health: metrics.HealthOK}}}
+
+	cases := []struct {
+		name   string
+		source metrics.Source
+		status int
+	}{
+		{"ok", fakeSource{snap: snap}, http.StatusOK},
+		{"unconfigured", nil, http.StatusServiceUnavailable},
+		{"prometheus error", fakeSource{err: errors.New("boom")}, http.StatusBadGateway},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			handler, err := New(c.source)
+			if err != nil {
+				t.Fatalf("New: %v", err)
+			}
+
+			rec := httptest.NewRecorder()
+			handler.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/api/nodes", nil))
+
+			if rec.Code != c.status {
+				t.Fatalf("expected %d, got %d", c.status, rec.Code)
+			}
+			if c.status != http.StatusOK {
+				return
+			}
+
+			var got metrics.Snapshot
+			if err := json.NewDecoder(rec.Body).Decode(&got); err != nil {
+				t.Fatalf("decode: %v", err)
+			}
+			if len(got.Nodes) != 1 || got.Nodes[0].Name != "zeus" {
+				t.Fatalf("unexpected nodes: %+v", got.Nodes)
+			}
+		})
 	}
 }

@@ -3,10 +3,12 @@ package server
 import (
 	_ "embed"
 	"encoding/json"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 
+	"github.com/UnstoppableMango/thecluster.lan/api/internal/metrics"
 	"github.com/go-chi/chi/v5"
 	"github.com/olivere/vite"
 )
@@ -18,9 +20,11 @@ type pingResponse struct {
 	Message string `json:"message"`
 }
 
-func New(staticDirs ...string) (http.Handler, error) {
+// New builds the router. A nil nodes source makes /api/nodes respond 503.
+func New(nodes metrics.Source, staticDirs ...string) (http.Handler, error) {
 	r := chi.NewRouter()
 	r.Get("/ping", handlePing)
+	r.Get("/api/nodes", nodesHandler(nodes))
 
 	if root := resolveStaticDir(staticDirs...); root != "" {
 		fsys := os.DirFS(root)
@@ -42,6 +46,26 @@ func New(staticDirs ...string) (http.Handler, error) {
 func handlePing(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(pingResponse{Message: "pong"})
+}
+
+func nodesHandler(nodes metrics.Source) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if nodes == nil {
+			http.Error(w, "node metrics not configured", http.StatusServiceUnavailable)
+			return
+		}
+
+		snap, err := nodes.Snapshot(r.Context())
+		if err != nil {
+			log.Printf("nodes snapshot: %v", err)
+			http.Error(w, "unable to query node metrics", http.StatusBadGateway)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Cache-Control", "no-store")
+		_ = json.NewEncoder(w).Encode(snap)
+	}
 }
 
 func notFoundHandler(w http.ResponseWriter, _ *http.Request) {
