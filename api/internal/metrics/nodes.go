@@ -5,6 +5,8 @@ import (
 	"sort"
 	"sync"
 	"time"
+
+	"github.com/UnstoppableMango/thecluster.lan/api/internal/model"
 )
 
 const (
@@ -38,40 +40,8 @@ var (
 	queryClusterMem = `100 * (1 - sum(node_memory_MemAvailable_bytes) / sum(node_memory_MemTotal_bytes))`
 )
 
-type Snapshot struct {
-	Updated time.Time `json:"updated"`
-	Cluster Cluster   `json:"cluster"`
-	Nodes   []Node    `json:"nodes"`
-}
-
-type Cluster struct {
-	CPUPct *float64 `json:"cpuPct"`
-	MemPct *float64 `json:"memPct"`
-}
-
-type Node struct {
-	Name      string     `json:"name"`
-	Role      string     `json:"role"`
-	Arch      string     `json:"arch,omitempty"`
-	Health    Health     `json:"health"`
-	Reasons   []string   `json:"reasons"`
-	Ready     bool       `json:"ready"`
-	Cordoned  bool       `json:"cordoned"`
-	Exporter  bool       `json:"exporter"`
-	RootFSPct *float64   `json:"rootFsPct"`
-	Series    NodeSeries `json:"series"`
-}
-
-// NodeSeries holds the last Window of samples: CPU and Mem in percent, Disk and Net in bytes/sec.
-type NodeSeries struct {
-	CPU  []Point `json:"cpu"`
-	Mem  []Point `json:"mem"`
-	Disk []Point `json:"disk"`
-	Net  []Point `json:"net"`
-}
-
 type Source interface {
-	Snapshot(ctx context.Context) (*Snapshot, error)
+	Snapshot(ctx context.Context) (*model.Snapshot, error)
 }
 
 // Prometheus builds snapshots from kube-state-metrics and node-exporter data.
@@ -84,7 +54,7 @@ func NewPrometheus(baseURL string) *Prometheus {
 	return &Prometheus{Client: NewClient(baseURL), Now: time.Now}
 }
 
-func (p *Prometheus) Snapshot(ctx context.Context) (*Snapshot, error) {
+func (p *Prometheus) Snapshot(ctx context.Context) (*model.Snapshot, error) {
 	now := p.Now()
 	start := now.Add(-Window)
 
@@ -115,17 +85,17 @@ func (p *Prometheus) Snapshot(ctx context.Context) (*Snapshot, error) {
 		return nil, err
 	}
 
-	nodes := map[string]*Node{}
+	nodes := map[string]*model.Node{}
 	for _, s := range instant[queryNodes] {
 		name := s.Labels["node"]
 		if name == "" {
 			continue
 		}
-		nodes[name] = &Node{
+		nodes[name] = &model.Node{
 			Name:    name,
 			Role:    "worker",
 			Reasons: []string{},
-			Series:  NodeSeries{CPU: []Point{}, Mem: []Point{}, Disk: []Point{}, Net: []Point{}},
+			Series:  model.NodeSeries{CPU: []model.Point{}, Mem: []model.Point{}, Disk: []model.Point{}, Net: []model.Point{}},
 		}
 	}
 
@@ -156,25 +126,25 @@ func (p *Prometheus) Snapshot(ctx context.Context) (*Snapshot, error) {
 		}
 	}
 
-	assign := func(q string, field func(*NodeSeries) *[]Point) {
+	assign := func(q string, field func(*model.NodeSeries) *[]model.Point) {
 		for _, s := range ranges[q] {
 			if n := nodes[s.Labels["nodename"]]; n != nil {
 				*field(&n.Series) = s.Points
 			}
 		}
 	}
-	assign(queryCPU, func(s *NodeSeries) *[]Point { return &s.CPU })
-	assign(queryMem, func(s *NodeSeries) *[]Point { return &s.Mem })
-	assign(queryDisk, func(s *NodeSeries) *[]Point { return &s.Disk })
-	assign(queryNet, func(s *NodeSeries) *[]Point { return &s.Net })
+	assign(queryCPU, func(s *model.NodeSeries) *[]model.Point { return &s.CPU })
+	assign(queryMem, func(s *model.NodeSeries) *[]model.Point { return &s.Mem })
+	assign(queryDisk, func(s *model.NodeSeries) *[]model.Point { return &s.Disk })
+	assign(queryNet, func(s *model.NodeSeries) *[]model.Point { return &s.Net })
 
-	snap := &Snapshot{
+	snap := &model.Snapshot{
 		Updated: now.UTC(),
-		Cluster: Cluster{
+		Cluster: model.Cluster{
 			CPUPct: first(instant[queryClusterCPU]),
 			MemPct: first(instant[queryClusterMem]),
 		},
-		Nodes: make([]Node, 0, len(nodes)),
+		Nodes: make([]model.Node, 0, len(nodes)),
 	}
 	for _, n := range nodes {
 		assess(n)

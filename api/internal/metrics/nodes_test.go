@@ -8,6 +8,8 @@ import (
 	"slices"
 	"testing"
 	"time"
+
+	"github.com/UnstoppableMango/thecluster.lan/api/internal/model"
 )
 
 var testNow = time.Unix(1_800_000_000, 0)
@@ -117,7 +119,7 @@ func TestSnapshot(t *testing.T) {
 	}
 
 	names := make([]string, len(snap.Nodes))
-	byName := map[string]Node{}
+	byName := map[string]model.Node{}
 	for i, n := range snap.Nodes {
 		names[i] = n.Name
 		byName[n.Name] = n
@@ -130,16 +132,16 @@ func TestSnapshot(t *testing.T) {
 
 	cases := []struct {
 		name    string
-		health  Health
+		health  model.Health
 		reasons []string
 	}{
-		{"healthy", HealthOK, []string{}},
-		{"cp", HealthOK, []string{}},
-		{"cordoned", HealthOK, []string{}},
-		{"notready", HealthBad, []string{"not ready"}},
-		{"hotmem", HealthBad, []string{"mem > 90%"}},
-		{"noexporter", HealthBad, []string{"no metrics"}},
-		{"fullroot", HealthBad, []string{"root fs > 90%"}},
+		{"healthy", model.HealthOk, []string{}},
+		{"cp", model.HealthOk, []string{}},
+		{"cordoned", model.HealthOk, []string{}},
+		{"notready", model.HealthBad, []string{"not ready"}},
+		{"hotmem", model.HealthBad, []string{"mem > 90%"}},
+		{"noexporter", model.HealthBad, []string{"no metrics"}},
+		{"fullroot", model.HealthBad, []string{"root fs > 90%"}},
 	}
 	for _, c := range cases {
 		n := byName[c.name]
