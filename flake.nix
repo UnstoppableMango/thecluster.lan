@@ -98,6 +98,7 @@
               nil
               nixfmt
               nodejs
+              podman
             ];
 
             AIR = "${pkgs.air}/bin/air";
