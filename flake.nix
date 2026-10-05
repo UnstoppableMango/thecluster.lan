@@ -85,6 +85,7 @@
           devShells.default = pkgs.mkShell {
             packages = with pkgs; [
               actionlint
+              air
               bun
               bun2nix
               docker
@@ -99,6 +100,7 @@
               nodejs
             ];
 
+            AIR = "${pkgs.air}/bin/air";
             BUN = "${pkgs.bun}/bin/bun";
             BUN2NIX = "${pkgs.bun2nix}/bin/bun2nix";
             GO = "${pkgs.go}/bin/go";

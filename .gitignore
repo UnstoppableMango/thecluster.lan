@@ -4,6 +4,7 @@
 
 result
 bin/
+api/tmp/
 web/dist/
 web/node_modules/
 .claude/

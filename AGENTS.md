@@ -19,9 +19,10 @@ nix develop     # Enter shell with all tools (bun, go, helm, kubectl, etc.)
 make build          # Build web + API
 make test           # Run Go tests (go test ./...)
 make run            # Start API at localhost:8080
+make dev            # Vite on 0.0.0.0:5173 (HMR, proxies /ping) + API under air on :8080
 make check          # Full check: test + build-web + chart-lint + nix flake check
 make lint           # Helm chart lint
-make clean          # Remove dist/, api/thecluster-api, result
+make clean          # Remove dist/, api/thecluster-api, api/tmp/, result
 ```
 
 **Run a single Go test:**
