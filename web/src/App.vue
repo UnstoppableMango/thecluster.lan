@@ -1,62 +1,70 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed } from "vue";
+import ClusterHeader from "./components/ClusterHeader.vue";
+import NodeTile from "./components/NodeTile.vue";
+import { formatClock } from "./format";
+import { useNodes } from "./composables/useNodes";
 
-const status = ref("Idle");
-const loading = ref(false);
+const WINDOW_SECONDS = 15 * 60;
+const COLUMNS = 4;
 
-async function ping() {
-  loading.value = true;
-  status.value = "Pinging...";
+const { snapshot, lastOk, now, stale } = useNodes();
 
-  try {
-    const response = await fetch("/ping");
-
-    if (!response.ok) {
-      throw new Error(`Request failed with ${response.status}`);
-    }
-
-    const payload = await response.json();
-    status.value = payload.message;
-  } catch (error) {
-    status.value =
-      error instanceof Error ? error.message : "Unable to reach the API";
-  } finally {
-    loading.value = false;
-  }
-}
+const end = computed(() => (snapshot.value ? Date.parse(snapshot.value.updated) / 1000 : now.value / 1000));
+const rows = computed(() => Math.max(1, Math.ceil((snapshot.value?.nodes.length ?? 0) / COLUMNS)));
 </script>
 
 <template>
-  <main
-    class="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-slate-100"
-  >
-    <section class="w-full max-w-xl rounded-3xl border border-slate-800 bg-slate-900/80 p-10 shadow-2xl shadow-slate-950/50">
-      <p class="text-sm font-semibold uppercase tracking-[0.35em] text-cyan-400">
-        THECLUSTER
-      </p>
-      <h1 class="mt-4 text-4xl font-semibold tracking-tight">
-        Internal dashboard
-      </h1>
-      <p class="mt-4 text-base text-slate-300">
-        The first slice is intentionally small: a Vue landing page, a Go API,
-        and a Nix-native build for both.
-      </p>
-
-      <div class="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
-        <button
-          class="inline-flex items-center justify-center rounded-full bg-cyan-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:bg-cyan-700"
-          type="button"
-          :disabled="loading"
-          @click="ping"
-        >
-          {{ loading ? "Pinging..." : "Ping API" }}
-        </button>
-
-        <p class="text-sm text-slate-300">
-          Status:
-          <span class="font-medium text-white">{{ status }}</span>
-        </p>
-      </div>
+  <main class="board" :class="{ 'is-stale': stale }">
+    <ClusterHeader :snapshot="snapshot" :now="now" :last-ok="lastOk" />
+    <section class="grid" :style="{ gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))` }">
+      <NodeTile v-for="node in snapshot?.nodes ?? []" :key="node.name" :node="node" :end="end" :window="WINDOW_SECONDS" />
     </section>
+    <div v-if="stale" class="stale">
+      DATA STALE
+      <small>{{ lastOk === null ? "no data received" : `last update ${formatClock(new Date(lastOk))}` }}</small>
+    </div>
   </main>
 </template>
+
+<style scoped>
+.board {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  height: 100vh;
+  padding: 0.75rem;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  min-height: 0;
+}
+.is-stale > :not(.stale) {
+  opacity: 0.25;
+  filter: grayscale(1);
+}
+.stale {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 4rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--warn);
+}
+.stale small {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+</style>
