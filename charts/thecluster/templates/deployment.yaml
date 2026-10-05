@@ -27,6 +27,8 @@ spec:
               value: {{ .Values.service.targetPort | quote }}
             - name: STATIC_DIR
               value: /wwwroot
+            - name: PROMETHEUS_URL
+              value: {{ .Values.prometheus.url | quote }}
           readinessProbe:
             httpGet:
               path: /ping

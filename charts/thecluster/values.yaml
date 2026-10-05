@@ -23,6 +23,10 @@ httpRoute:
   parentRefs: []
   hostnames: []
 
+prometheus:
+  # Base URL of the Prometheus that scrapes kube-state-metrics and node-exporter.
+  url: http://kube-prometheus-stack-prometheus.monitoring:9090
+
 resources: {}
 
 nodeSelector: {}
