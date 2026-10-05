@@ -5,14 +5,16 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/UnstoppableMango/thecluster.lan/api/internal/metrics"
 	"github.com/UnstoppableMango/thecluster.lan/api/internal/server"
 )
 
 func main() {
 	port := getenv("PORT", "8080")
+	promURL := getenv("PROMETHEUS_URL", "http://kube-prometheus-stack-prometheus.monitoring:9090")
 
 	addr := ":" + port
-	handler, err := server.New(staticDirs()...)
+	handler, err := server.New(metrics.NewPrometheus(promURL), staticDirs()...)
 	if err != nil {
 		log.Fatal(err)
 	}
