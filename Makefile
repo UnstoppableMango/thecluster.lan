@@ -6,6 +6,7 @@ GO        ?= go
 GOMOD2NIX ?= gomod2nix
 HELM      ?= helm
 NIX       ?= nix
+TDL       ?= tdl
 
 GO_SRC := $(shell find api -type f -name '*.go')
 TS_SRC := $(shell find web -type f -name '*.ts')
@@ -30,6 +31,10 @@ dev-web: web-deps
 
 update:
 	$(NIX) flake update
+
+gen:
+	$(TDL) fmt -w model/cluster.tdl
+	$(TDL) gen --clean model/cluster.tdl
 
 check: test build-web chart-lint
 	$(NIX) flake check --all-systems
