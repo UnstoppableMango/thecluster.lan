@@ -38,7 +38,7 @@ make dev
 ```
 
 This runs the Vite dev server on port 5173 and the Go API on port 8080 under [air](https://github.com/air-verse/air).
-Vite listens on all interfaces and proxies `/ping` to the API, so another machine on the LAN can open `http://<host-ip>:5173`.
+Vite listens on all interfaces and proxies `/ping` and `/api` to the API, so another machine on the LAN can open `http://<host-ip>:5173`.
 Vue edits hot-reload in the browser.
 Go edits rebuild and restart the API; a failed build leaves the last good binary running.
 Browsing by hostname instead of IP requires adding the name to `server.allowedHosts` in `web/vite.config.ts`.

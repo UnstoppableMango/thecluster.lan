@@ -8,6 +8,9 @@ export default defineConfig({
   build: { manifest: true },
   server: {
     host: true,
-    proxy: { "/ping": "http://localhost:8080" },
+    proxy: {
+      "/ping": "http://localhost:8080",
+      "/api": "http://localhost:8080",
+    },
   },
 });

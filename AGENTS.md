@@ -19,7 +19,7 @@ nix develop     # Enter shell with all tools (bun, go, helm, kubectl, etc.)
 make build          # Build web + API
 make test           # Run Go tests (go test ./...)
 make run            # Start API at localhost:8080
-make dev            # Vite on 0.0.0.0:5173 (HMR, proxies /ping) + API under air on :8080
+make dev            # Vite on 0.0.0.0:5173 (HMR, proxies /ping and /api) + API under air on :8080
 make check          # Full check: test + build-web + chart-lint + nix flake check
 make lint           # Helm chart lint
 make clean          # Remove dist/, api/thecluster-api, api/tmp/, result
@@ -57,7 +57,10 @@ nix build .#ctr     # Docker image (stream layered)
 
 ### Vue Frontend (`web/`)
 - Vue 3 Composition API (`<script setup>`), Vite, Tailwind CSS v4
-- `App.vue` — main page with `/ping` call + response display
+- `App.vue`: rack-monitor node health board (header + 4-column tile grid), polls `/api/nodes` every 15s
+- `components/`: `ClusterHeader.vue`, `NodeTile.vue`, `Sparkline.vue` (inline SVG, no chart library)
+- `composables/useNodes.ts`: polling + stale detection (overlay after 60s without a successful fetch)
+- Sizing is rem-based with `1rem = min(100vw/120, 100vh/67.5)`, so the board fills 1080p and 4K alike
 - No 404 page — Go embeds `api/internal/server/404.html` at compile time and serves it directly
 - Build output → `dist/` (consumed by Go API for static serving)
 

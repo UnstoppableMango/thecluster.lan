@@ -1,6 +1,19 @@
 @import "tailwindcss";
 
 :root {
+  --ok: #22ff6a;
+  --bad: #ff2d2d;
+  --warn: #ffb020;
+  --on-health: #04120a;
+  --surface: #0f172a;
+  --background: #020617;
+  --grid: #334155;
+  --spark: #38bdf8;
+  --accent: #22d3ee;
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+
+  color-scheme: dark;
   font-family:
     Inter,
     ui-sans-serif,
@@ -9,15 +22,13 @@
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
-  color: #e2e8f0;
-  background: #020617;
+  color: var(--text);
+  background: var(--background);
+  /* 1rem = 16px at 1920x1080; the whole board scales with the screen. */
+  font-size: min(100vw / 120, 100vh / 67.5);
 }
 
 body {
   margin: 0;
-  min-width: 320px;
-}
-
-button {
-  font: inherit;
+  background: var(--background);
 }
