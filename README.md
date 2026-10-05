@@ -31,6 +31,18 @@ make run
 
 The Go service looks for static files in `../web/dist` and `web/dist` by default, so build the web app before starting the API locally.
 
+### Dev loop
+
+```bash
+make dev
+```
+
+This runs the Vite dev server on port 5173 and the Go API on port 8080 under [air](https://github.com/air-verse/air).
+Vite listens on all interfaces and proxies `/ping` to the API, so another machine on the LAN can open `http://<host-ip>:5173`.
+Vue edits hot-reload in the browser.
+Go edits rebuild and restart the API; a failed build leaves the last good binary running.
+Browsing by hostname instead of IP requires adding the name to `server.allowedHosts` in `web/vite.config.ts`.
+
 ## Make targets
 
 ```bash

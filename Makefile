@@ -1,3 +1,4 @@
+AIR       ?= air
 BUN       ?= bun
 BUN2NIX   ?= bun2nix
 DOCKER	  ?= docker
@@ -20,6 +21,13 @@ test:
 run: build-web
 	$(GO) -C api run ./cmd/thecluster-api
 
+dev:
+	$(MAKE) -j2 dev-api dev-web
+dev-api:
+	cd api && $(AIR)
+dev-web: web-deps
+	$(BUN) run --cwd web dev
+
 update:
 	$(NIX) flake update
 
@@ -30,7 +38,7 @@ load: bin/stream-image.sh
 	${CURDIR}/bin/stream-image.sh | $(DOCKER) load
 
 clean:
-	rm -rf web/dist api/thecluster-api result result-*
+	rm -rf web/dist api/thecluster-api api/tmp result result-*
 
 web-deps:
 	$(BUN) install --cwd web
