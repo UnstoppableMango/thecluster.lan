@@ -50,7 +50,9 @@ jobs:
           github_access_token: ${{ github.token }}
 
       - run: nix flake check --all-systems
-      - run: nix build .#api .#web .#app
+      # web requires the gccarch-x86-64-v3 feature on x86_64 (bun needs
+      # AVX2; see nix/web.nix), which this runner's nix does not advertise.
+      - run: nix build .#api .#web .#app --extra-system-features gccarch-x86-64-v3
 
   helm:
     runs-on: thecluster
@@ -108,7 +110,7 @@ jobs:
 
       - name: Build image stream
         run: |
-          nix build .#ctr
+          nix build .#ctr --extra-system-features gccarch-x86-64-v3
           ./result | docker load
 
       - name: Tag and push image
