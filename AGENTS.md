@@ -66,7 +66,7 @@ nix build .#ctr     # Docker image (stream layered)
 
 ### Nix Packaging (`nix/`)
 - `api.nix` — `buildGoApplication` (uses `gomod2nix.toml`)
-- `web.nix` — `bun2nix.mkDerivation` (uses `bun.nix`, auto-generated from `bun.lock`). On x86_64 it requires the `gccarch-x86-64-v3` system feature, since nixpkgs' bun needs AVX2; a local build on a machine whose CPU has AVX2 but whose nix does not advertise the feature needs `--extra-system-features gccarch-x86-64-v3`, which CI passes only when the runner's CPU has AVX2. Claiming it on a CPU without AVX2 crashes bun with `Illegal instruction`
+- `web.nix` — `bun2nix.mkDerivation` (uses `bun.nix`, auto-generated from `bun.lock`). On x86_64 it requires the `gccarch-x86-64-v3` system feature, since nixpkgs' bun needs AVX2; a local build on a machine whose CPU has AVX2 but whose nix does not advertise the feature needs `--extra-system-features gccarch-x86-64-v3`, which CI passes. Claiming it on a CPU without AVX2 crashes bun with `Illegal instruction`
 - `app.nix` — combines Go binary + web dist into single derivation
 - `ctr.nix` — `dockerTools.streamLayeredImage`
 
