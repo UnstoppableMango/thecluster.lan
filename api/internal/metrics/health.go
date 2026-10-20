@@ -1,12 +1,9 @@
 package metrics
 
-import "fmt"
+import (
+	"fmt"
 
-type Health string
-
-const (
-	HealthOK  Health = "ok"
-	HealthBad Health = "bad"
+	"github.com/UnstoppableMango/thecluster.lan/api/internal/model"
 )
 
 const (
@@ -16,7 +13,7 @@ const (
 
 // assess marks a node bad when it is NotReady, has no node-exporter data,
 // or is over a resource threshold. Cordoning alone does not affect health.
-func assess(n *Node) {
+func assess(n *model.Node) {
 	reasons := []string{}
 
 	if !n.Ready {
@@ -34,13 +31,13 @@ func assess(n *Node) {
 
 	n.Reasons = reasons
 	if len(reasons) == 0 {
-		n.Health = HealthOK
+		n.Health = model.HealthOk
 	} else {
-		n.Health = HealthBad
+		n.Health = model.HealthBad
 	}
 }
 
-func last(points []Point) (float64, bool) {
+func last(points []model.Point) (float64, bool) {
 	if len(points) == 0 {
 		return 0, false
 	}

@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/UnstoppableMango/thecluster.lan/api/internal/metrics"
+	"github.com/UnstoppableMango/thecluster.lan/api/internal/model"
 )
 
 func TestPing(t *testing.T) {
@@ -142,16 +143,16 @@ func writeFile(t *testing.T, path, content string) {
 }
 
 type fakeSource struct {
-	snap *metrics.Snapshot
+	snap *model.Snapshot
 	err  error
 }
 
-func (f fakeSource) Snapshot(context.Context) (*metrics.Snapshot, error) {
+func (f fakeSource) Snapshot(context.Context) (*model.Snapshot, error) {
 	return f.snap, f.err
 }
 
 func TestNodes(t *testing.T) {
-	snap := &metrics.Snapshot{Nodes: []metrics.Node{{Name: "zeus", Health: metrics.HealthOK}}}
+	snap := &model.Snapshot{Nodes: []model.Node{{Name: "zeus", Health: model.HealthOk}}}
 
 	cases := []struct {
 		name   string
@@ -179,7 +180,7 @@ func TestNodes(t *testing.T) {
 				return
 			}
 
-			var got metrics.Snapshot
+			var got model.Snapshot
 			if err := json.NewDecoder(rec.Body).Decode(&got); err != nil {
 				t.Fatalf("decode: %v", err)
 			}
