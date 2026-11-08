@@ -1,0 +1,83 @@
+// The node health snapshot served by GET /api/nodes.
+package thecluster
+
+/// Whether a node needs attention.
+enum Health { ok bad }
+
+/// A [unix seconds, value] sample.
+type Point: [float64] where { length(2..2) }
+
+/// The response body of GET /api/nodes.
+type Snapshot {
+  updated: instant
+  cluster: Cluster
+  nodes: [Node]
+}
+
+/// Cluster-wide utilization, absent when node-exporter has no data.
+type Cluster {
+  cpuPct: float64?
+  memPct: float64?
+}
+
+type Node {
+  name: string
+  role: string
+  arch: string
+  health: Health
+  reasons: [string]
+  ready: bool
+  cordoned: bool
+  exporter: bool
+  rootFsPct: float64?
+  series: NodeSeries
+}
+
+/// The last 15 minutes of samples: cpu and mem in percent, disk and net in bytes/sec.
+type NodeSeries {
+  cpu: [Point]
+  mem: [Point]
+  disk: [Point]
+  net: [Point]
+}
+
+target go for thecluster {
+  out("api/internal/model")
+  package("github.com/UnstoppableMango/thecluster.lan/api/internal/model")
+  Snapshot {
+    updated => tag("json:\"updated\"")
+    cluster => tag("json:\"cluster\"")
+    nodes => tag("json:\"nodes\"")
+  }
+  Cluster {
+    cpuPct {
+      name("CPUPct")
+      tag("json:\"cpuPct\"")
+    }
+    memPct => tag("json:\"memPct\"")
+  }
+  Node {
+    name => tag("json:\"name\"")
+    role => tag("json:\"role\"")
+    arch => tag("json:\"arch,omitempty\"")
+    health => tag("json:\"health\"")
+    reasons => tag("json:\"reasons\"")
+    ready => tag("json:\"ready\"")
+    cordoned => tag("json:\"cordoned\"")
+    exporter => tag("json:\"exporter\"")
+    rootFsPct {
+      name("RootFSPct")
+      tag("json:\"rootFsPct\"")
+    }
+    series => tag("json:\"series\"")
+  }
+  NodeSeries {
+    cpu {
+      name("CPU")
+      tag("json:\"cpu\"")
+    }
+    mem => tag("json:\"mem\"")
+    disk => tag("json:\"disk\"")
+    net => tag("json:\"net\"")
+  }
+}

@@ -10,10 +10,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
-)
 
-// Point is a [unix seconds, value] pair, encoded as a two-element JSON array.
-type Point [2]float64
+	"github.com/UnstoppableMango/thecluster.lan/api/internal/model"
+)
 
 type Sample struct {
 	Labels map[string]string
@@ -22,7 +21,7 @@ type Sample struct {
 
 type Series struct {
 	Labels map[string]string
-	Points []Point
+	Points []model.Point
 }
 
 // Client is a minimal Prometheus HTTP API client covering instant and range queries.
@@ -98,7 +97,7 @@ func (c *Client) QueryRange(ctx context.Context, query string, start, end time.T
 
 	series := make([]Series, 0, len(raw))
 	for _, r := range raw {
-		points := make([]Point, 0, len(r.Values))
+		points := make([]model.Point, 0, len(r.Values))
 		for _, v := range r.Values {
 			if p, ok := parsePoint(v); ok {
 				points = append(points, p)
@@ -136,21 +135,21 @@ func (c *Client) get(ctx context.Context, path string, params url.Values, result
 	return json.Unmarshal(body.Data.Result, out)
 }
 
-func parsePoint(v [2]any) (Point, bool) {
+func parsePoint(v [2]any) (model.Point, bool) {
 	ts, ok := v[0].(float64)
 	if !ok {
-		return Point{}, false
+		return nil, false
 	}
 	s, ok := v[1].(string)
 	if !ok {
-		return Point{}, false
+		return nil, false
 	}
 	f, err := strconv.ParseFloat(s, 64)
 	if err != nil || math.IsNaN(f) || math.IsInf(f, 0) {
-		return Point{}, false
+		return nil, false
 	}
 
-	return Point{ts, f}, true
+	return model.Point{ts, f}, true
 }
 
 func formatTime(t time.Time) string {

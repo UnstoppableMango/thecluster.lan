@@ -23,6 +23,7 @@ make dev            # Vite on 0.0.0.0:5173 (HMR, proxies /ping and /api) + API u
 make check          # Full check: test + build-web + chart-lint + nix flake check
 make lint           # Helm chart lint
 make clean          # Remove dist/, api/thecluster-api, api/tmp/, result
+make gen            # tdl fmt + tdl gen: model/cluster.tdl -> api/internal/model
 ```
 
 **Run a single Go test:**
@@ -45,10 +46,17 @@ nix build .#ctr     # Docker image (stream layered)
 
 ## Architecture
 
+### Model (`model/`)
+- `model/cluster.tdl` defines the `/api/nodes` response types in [tdl](https://github.com/UnstoppableMango/tdl)
+- Its `target go` block generates `api/internal/model/` (do not edit; run `make gen`). JSON tags and Go names come from `tag`/`name` directives in that block
+- A field needing two directives uses a nested block (`cpuPct { name(...) tag(...) }`); `field => a(...) b(...)` attaches only the first
+- `out(...)` resolves against the working directory, so run `tdl gen` from the repository root
+- `nix flake check` runs `tdl-check`, `tdl-fmt`, and `tdl-gen` (`tdl gen --verify`, fails when generated code is stale)
+
 ### Go API (`api/`)
 - Entry: `cmd/thecluster-api/main.go`
 - Logic: `internal/server/server.go` — `GET /ping`, `GET /api/nodes`, and static file serving via `chi` + `github.com/olivere/vite`
-- `internal/metrics/`: minimal Prometheus HTTP client and node snapshot builder (kube-state-metrics for node list/readiness/cordon/role, node-exporter for CPU/mem/disk/net/root FS). Health thresholds live in `health.go`
+- `internal/metrics/`: minimal Prometheus HTTP client and node snapshot builder, returning `internal/model` types (kube-state-metrics for node list/readiness/cordon/role, node-exporter for CPU/mem/disk/net/root FS). Health thresholds live in `health.go`
 - Prometheus base URL from `PROMETHEUS_URL` (default `http://kube-prometheus-stack-prometheus.monitoring:9090`)
 - Serves Vue build output from `../web/dist` (configurable via `STATIC_DIR` env var)
 - Routing: `GET /` → Vite index, `GET /assets/*` → Vite assets, all other paths → `404.html` with HTTP 404

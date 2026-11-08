@@ -25,6 +25,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.inputs.systems.follows = "systems";
     };
+
+    # Not following nixpkgs: tdl builds with a newer Go than this one pins.
+    tdl = {
+      url = "github:UnstoppableMango/tdl";
+      inputs.systems.follows = "systems";
+      inputs.flake-parts.follows = "flake-parts";
+      inputs.treefmt-nix.follows = "treefmt-nix";
+    };
   };
 
   outputs =
@@ -35,10 +43,16 @@
       imports = with inputs; [
         systems.flakeModule or { }
         treefmt-nix.flakeModule
+        tdl.flakeModules.default
       ];
 
       perSystem =
-        { inputs', system, ... }:
+        {
+          config,
+          inputs',
+          system,
+          ...
+        }:
         let
           pkgs = import inputs.nixpkgs {
             inherit system;
@@ -82,7 +96,17 @@
             meta.description = "THECLUSTER API";
           };
 
+          # Runs from the repository root, where the go target's out() resolves.
+          tdl = {
+            enable = true;
+            package = inputs'.tdl.packages.default;
+            src = ./.;
+            files = [ "model/cluster.tdl" ];
+            gen.files = [ "model/cluster.tdl" ];
+          };
+
           devShells.default = pkgs.mkShell {
+            inputsFrom = [ config.devShells.tdl ];
             packages = with pkgs; [
               actionlint
               air
@@ -108,6 +132,7 @@
             GOMOD2NIX = "${pkgs.gomod2nix}/bin/gomod2nix";
             HELM = "${pkgs.kubernetes-helm}/bin/helm";
             NIXFMT = "${pkgs.nixfmt}/bin/nixfmt";
+            TDL = "${config.tdl.package}/bin/tdl";
           };
 
           treefmt = {
