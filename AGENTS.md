@@ -57,7 +57,7 @@ nix build .#ctr     # Docker image (stream layered)
 
 ### Go API (`api/`)
 - Entry: `cmd/thecluster-api/main.go`
-- Logic: `internal/server/server.go` serves `GET /ping`, `GET /api/nodes`, and static file serving via `chi` + `github.com/olivere/vite`
+- Logic: `internal/server/server.go` serves `GET /ping`, `GET /api/nodes` and static files, via `chi` + `github.com/olivere/vite`
 - `internal/metrics/`: minimal Prometheus HTTP client and node snapshot builder, returning `internal/model` types (kube-state-metrics for node list/readiness/cordon/role, node-exporter for CPU/mem/disk/net/root FS).
   Health thresholds live in `health.go`
 - Prometheus base URL from `PROMETHEUS_URL` (default `http://kube-prometheus-stack-prometheus.monitoring:9090`)
