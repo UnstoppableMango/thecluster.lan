@@ -4,7 +4,8 @@ Guidance for AI agents working in this repository.
 
 ## Overview
 
-Internal dashboard for thecluster.lan. Vue 3 frontend + Go API backend, packaged with Nix Flakes and deployed via Helm to Kubernetes.
+Internal dashboard for thecluster.lan.
+Vue 3 frontend + Go API backend, packaged with Nix Flakes and deployed via Helm to Kubernetes.
 
 ## Development Environment
 
@@ -48,15 +49,17 @@ nix build .#ctr     # Docker image (stream layered)
 
 ### Model (`model/`)
 - `model/cluster.tdl` defines the `/api/nodes` response types in [tdl](https://github.com/UnstoppableMango/tdl)
-- Its `target go` block generates `api/internal/model/` (do not edit; run `make gen`). JSON tags and Go names come from `tag`/`name` directives in that block
+- Its `target go` block generates `api/internal/model/` (do not edit; run `make gen`).
+  JSON tags and Go names come from `tag`/`name` directives in that block
 - A field needing two directives uses a nested block (`cpuPct { name(...) tag(...) }`); `field => a(...) b(...)` attaches only the first
 - `out(...)` resolves against the working directory, so run `tdl gen` from the repository root
 - `nix flake check` runs `tdl-check`, `tdl-fmt`, and `tdl-gen` (`tdl gen --verify`, fails when generated code is stale)
 
 ### Go API (`api/`)
 - Entry: `cmd/thecluster-api/main.go`
-- Logic: `internal/server/server.go` — `GET /ping`, `GET /api/nodes`, and static file serving via `chi` + `github.com/olivere/vite`
-- `internal/metrics/`: minimal Prometheus HTTP client and node snapshot builder, returning `internal/model` types (kube-state-metrics for node list/readiness/cordon/role, node-exporter for CPU/mem/disk/net/root FS). Health thresholds live in `health.go`
+- Logic: `internal/server/server.go` serves `GET /ping`, `GET /api/nodes` and static files, via `chi` + `github.com/olivere/vite`
+- `internal/metrics/`: minimal Prometheus HTTP client and node snapshot builder, returning `internal/model` types (kube-state-metrics for node list/readiness/cordon/role, node-exporter for CPU/mem/disk/net/root FS).
+  Health thresholds live in `health.go`
 - Prometheus base URL from `PROMETHEUS_URL` (default `http://kube-prometheus-stack-prometheus.monitoring:9090`)
 - Serves Vue build output from `../web/dist` (configurable via `STATIC_DIR` env var)
 - Routing: `GET /` → Vite index, `GET /assets/*` → Vite assets, all other paths → `404.html` with HTTP 404
@@ -69,14 +72,16 @@ nix build .#ctr     # Docker image (stream layered)
 - `components/`: `ClusterHeader.vue`, `NodeTile.vue`, `Sparkline.vue` (inline SVG, no chart library)
 - `composables/useNodes.ts`: polling + stale detection (overlay after 60s without a successful fetch)
 - Sizing is rem-based with `1rem = min(100vw/120, 100vh/67.5)`, so the board fills 1080p and 4K alike
-- No 404 page — Go embeds `api/internal/server/404.html` at compile time and serves it directly
+- No 404 page: Go embeds `api/internal/server/404.html` at compile time and serves it directly
 - Build output → `dist/` (consumed by Go API for static serving)
 
 ### Nix Packaging (`nix/`)
-- `api.nix` — `buildGoApplication` (uses `gomod2nix.toml`)
-- `web.nix` — `bun2nix.mkDerivation` (uses `bun.nix`, auto-generated from `bun.lock`). On x86_64 it requires the `gccarch-x86-64-v3` system feature, since nixpkgs' bun needs AVX2; a local build on a machine whose CPU has AVX2 but whose nix does not advertise the feature needs `--extra-system-features gccarch-x86-64-v3`, which CI passes. Claiming it on a CPU without AVX2 crashes bun with `Illegal instruction`
-- `app.nix` — combines Go binary + web dist into single derivation
-- `ctr.nix` — `dockerTools.streamLayeredImage`
+- `api.nix`: `buildGoApplication` (uses `gomod2nix.toml`)
+- `web.nix`: `bun2nix.mkDerivation` (uses `bun.nix`, auto-generated from `bun.lock`).
+  On x86_64 it requires the `gccarch-x86-64-v3` system feature, since nixpkgs' bun needs AVX2; a local build on a machine whose CPU has AVX2 but whose nix does not advertise the feature needs `--extra-system-features gccarch-x86-64-v3`, which CI passes.
+  Claiming it on a CPU without AVX2 crashes bun with `Illegal instruction`
+- `app.nix`: combines Go binary + web dist into single derivation
+- `ctr.nix`: `dockerTools.streamLayeredImage`
 
 ### Helm Chart (`charts/thecluster/`)
 - Deploys the combined app container to Kubernetes
@@ -101,6 +106,6 @@ make nix-deps
 
 ## CI Pipeline
 
-Five parallel jobs: `web` (bun build), `api` (go test), `nix` (flake check + nix build), `helm` (lint + publish), `docker` (depends on nix — loads and pushes container).
+Five parallel jobs: `web` (bun build), `api` (go test), `nix` (flake check + nix build), `helm` (lint + publish), `docker` (depends on nix; loads and pushes container).
 
 Images published to `ghcr.io` on push to main with git SHA tag.
