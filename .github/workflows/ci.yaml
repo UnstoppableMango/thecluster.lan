@@ -54,7 +54,6 @@ jobs:
       # see nix/web.nix), which this runner's nix does not advertise.
       - run: nix build .#api .#web .#app --extra-system-features gccarch-x86-64-v3
 
-  # Hercules CI builds Linux; the hosted jobs and the gate come from unmango/ci.
   nix-ci:
     uses: unmango/ci/.github/workflows/nix-ci.yml@30ae545a17dc3cd88663c8d0aa92ae374b62779c
     permissions:
