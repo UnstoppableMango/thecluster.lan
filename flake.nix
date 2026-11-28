@@ -26,6 +26,15 @@
       inputs.flake-utils.inputs.systems.follows = "systems";
     };
 
+    mynix = {
+      url = "github:UnstoppableMango/nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-parts.follows = "flake-parts";
+      inputs.gomod2nix.follows = "gomod2nix";
+      inputs.systems.follows = "systems";
+      inputs.treefmt-nix.follows = "treefmt-nix";
+    };
+
     # Not following nixpkgs: tdl builds with a newer Go than this one pins.
     tdl = {
       url = "github:UnstoppableMango/tdl";
@@ -44,6 +53,7 @@
         systems.flakeModule or { }
         treefmt-nix.flakeModule
         tdl.flakeModules.default
+        mynix.flakeModules.ci
       ];
 
       perSystem =
@@ -133,6 +143,19 @@
             HELM = "${pkgs.kubernetes-helm}/bin/helm";
             NIXFMT = "${pkgs.nixfmt}/bin/nixfmt";
             TDL = "${config.tdl.package}/bin/tdl";
+          };
+
+          ci.fixup = {
+            runtimeInputs = with pkgs; [
+              bun2nix
+              gomod2nix
+              nixfmt
+            ];
+            steps = [
+              "gomod2nix generate --dir api"
+              "bun2nix -l web/bun.lock -o web/bun.nix"
+              "nixfmt web/bun.nix"
+            ];
           };
 
           treefmt = {
